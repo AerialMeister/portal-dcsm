@@ -1,246 +1,263 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Portal de gestión DCSM</title>
-<meta name="description" content="Portal de gestión y continuidad operacional del datacenter DCSM." />
-<style>
-  :root {
-    --accent: #277ffb;
-    --accent-soft: #1f6fe0;
-    --text: #16243f;
-    --text-dim: #5a6b86;
-    --card: #ffffff;
-    --card-border: rgba(39, 127, 251, 0.16);
-    --card-border-hover: rgba(39, 127, 251, 0.55);
-    --font: "Segoe UI", Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { min-height: 100%; }
-  body {
-    font-family: var(--font);
-    color: var(--text);
-    background:
-      radial-gradient(1100px 600px at 80% -10%, rgba(39,127,251,0.12), transparent 60%),
-      radial-gradient(900px 500px at 0% 110%, rgba(39,127,251,0.10), transparent 55%),
-      linear-gradient(160deg, #f5f8fd 0%, #e9f0fa 55%, #dde7f5 100%);
-    background-attachment: fixed;
-    overflow-x: hidden;
-    position: relative;
-  }
-  .bg-art {
-    position: fixed; inset: 0; z-index: 0; opacity: 0.6; pointer-events: none;
-    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent 100%);
-  }
-  .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 48px 24px 64px; }
-  header { text-align: center; }
-  .logos { display: flex; align-items: center; justify-content: center; gap: 26px; flex-wrap: wrap; margin-bottom: 38px; }
-  .logo-chip {
-    display: flex; align-items: center; justify-content: center;
-    width: 210px; height: 84px; background: #ffffff;
-    border: 1px solid rgba(22, 36, 63, 0.08); border-radius: 14px;
-    padding: 16px 22px; box-shadow: 0 6px 20px rgba(31, 58, 102, 0.10);
-  }
-  .logo-chip img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
-  @media (max-width: 480px) { .logo-chip { width: 170px; height: 70px; } }
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px; font-size: 12px;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-soft);
-    border: 1px solid var(--card-border); background: rgba(39, 127, 251, 0.07);
-    padding: 6px 14px; border-radius: 999px; margin-bottom: 18px;
-  }
-  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #1fae6b; box-shadow: 0 0 8px rgba(31, 174, 107, 0.7); animation: pulse 2.2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-  h1 {
-    font-size: clamp(30px, 5vw, 46px); font-weight: 700; letter-spacing: -0.5px;
-    line-height: 1.3; padding-bottom: 0.12em;
-    background: linear-gradient(90deg, #16243f, #2c6fd6);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  header p.subtitle { margin: 16px auto 0; max-width: 560px; color: var(--text-dim); font-size: 16px; line-height: 1.6; }
-  .grid { margin-top: 52px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
-  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
-  .card {
-    position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit;
-    background: var(--card); border: 1px solid var(--card-border); border-radius: 18px;
-    padding: 26px 26px 24px; overflow: hidden; box-shadow: 0 6px 22px rgba(31, 58, 102, 0.08);
-    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-  }
-  .card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(440px 200px at 100% 0%, rgba(39,127,251,0.16), transparent 70%); opacity: 0; transition: opacity 0.25s ease; }
-  /* Franja de acento que aparece al pasar el mouse (no en tarjetas "Próximamente") */
-  .card:not(.soon)::after {
-    content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 5px;
-    background: linear-gradient(180deg, var(--accent), #5aa0ff);
-    transform: scaleY(0); transform-origin: top; transition: transform 0.25s ease;
-  }
-  .card:not(.soon):hover::after { transform: scaleY(1); }
-  .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(39, 127, 251, 0.26); background: #f7fbff; }
-  .card:hover::before { opacity: 1; }
-  .card:hover h2 { color: var(--accent-soft); }
-  .card:hover .icon { border-color: var(--accent); background: linear-gradient(145deg, rgba(39,127,251,0.30), rgba(39,127,251,0.08)); }
-  .icon {
-    width: 52px; height: 52px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(145deg, rgba(39,127,251,0.16), rgba(39,127,251,0.04));
-    border: 1px solid rgba(39,127,251,0.22); margin-bottom: 18px;
-    transition: background 0.25s ease, border-color 0.25s ease;
-  }
-  .icon svg { width: 26px; height: 26px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
-  .card h2 { font-size: 18px; font-weight: 650; margin-bottom: 7px; position: relative; transition: color 0.2s ease; }
-  .card p { font-size: 14px; color: var(--text-dim); line-height: 1.55; position: relative; flex-grow: 1; }
-  .card .go { margin-top: 18px; display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--accent-soft); position: relative; }
-  .card .go svg { width: 15px; height: 15px; transition: transform 0.2s ease; }
-  .card:hover .go svg { transform: translateX(4px); }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DCSM — Centro de Operaciones</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ---------- Tarjetas "Próximamente" (desactivadas) ---------- */
-  .card.soon { cursor: default; background: #f1f4f9; border: 1px dashed rgba(22, 36, 63, 0.16); box-shadow: 0 4px 14px rgba(31, 58, 102, 0.05); }
-  .card.soon:hover { transform: none; border-color: rgba(22, 36, 63, 0.16); box-shadow: 0 4px 14px rgba(31, 58, 102, 0.05); background: #f1f4f9; }
-  .card.soon:hover::before { opacity: 0; }
-  .card.soon:hover h2 { color: #7a879c; }
-  .card.soon .icon { background: linear-gradient(145deg, rgba(120,134,158,0.16), rgba(120,134,158,0.04)); border-color: rgba(120,134,158,0.24); }
-  .card.soon:hover .icon { background: linear-gradient(145deg, rgba(120,134,158,0.16), rgba(120,134,158,0.04)); border-color: rgba(120,134,158,0.24); }
-  .card.soon .icon svg { stroke: #95a1b5; }
-  .card.soon h2 { color: #7a879c; }
-  .card.soon p { color: #97a2b4; }
-  .card.soon .go { color: #aab4c4; font-weight: 600; }
-  .soon-tag {
-    position: absolute; top: 14px; right: 14px; z-index: 2;
-    font-size: 10.5px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
-    color: #9a6b15; background: #fff3d6; border: 1px solid #f0d390;
-    padding: 4px 11px; border-radius: 999px; box-shadow: 0 2px 6px rgba(154, 107, 21, 0.12);
-  }
+    :root {
+      --navy:    #0b1f3a;
+      --navy2:   #0f2d52;
+      --accent:  #277ffb;
+      --accent2: #1a5bbf;
+      --border:  rgba(255,255,255,.1);
+      --card-bg: rgba(255,255,255,.04);
+      --card-hover: rgba(255,255,255,.08);
+      --text:    #e8edf4;
+      --muted:   rgba(232,237,244,.5);
+      --green:   #22c55e;
+      --soon:    #64748b;
+    }
 
-  footer { margin-top: 56px; text-align: center; color: var(--text-dim); font-size: 13px; border-top: 1px solid rgba(22, 36, 63, 0.10); padding-top: 24px; }
-  footer span { color: var(--accent-soft); font-weight: 600; }
-</style>
+    html, body {
+      height: 100%;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(90deg, #071526 0%, #0f2d52 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 20px rgba(0,0,0,.4);
+    }
+
+    .logo-icetel { display: flex; align-items: center; }
+
+    .header-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .logo-nextstream { display: flex; align-items: center; opacity: .8; }
+    .logo-nextstream img { height: 20px; width: auto; filter: brightness(0) invert(1); }
+
+    .header-title { margin-left: auto; text-align: right; }
+    .header-title h1 {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.9);
+      letter-spacing: .8px; text-transform: uppercase;
+    }
+    .header-title p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .hero { text-align: center; padding: 64px 24px 48px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(39,127,251,.15); border: 1px solid rgba(39,127,251,.3);
+      border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 600;
+      color: #6baefb; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .hero-badge::before {
+      content: ''; width: 6px; height: 6px; background: var(--green);
+      border-radius: 50%; animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(1.3); }
+    }
+    .hero h2 { font-size: 32px; font-weight: 700; color: #fff; letter-spacing: -.5px; }
+    .hero p {
+      margin-top: 10px; font-size: 15px; color: var(--muted);
+      max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6;
+    }
+
+    main { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px; margin-bottom: 48px;
+    }
+
+    a.card {
+      display: block; background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 26px 24px; text-decoration: none;
+      color: var(--text); transition: background .15s, border-color .15s, transform .15s;
+      position: relative; overflow: hidden;
+    }
+    a.card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(39,127,251,.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    a.card:hover {
+      background: var(--card-hover); border-color: rgba(39,127,251,.4);
+      transform: translateY(-2px);
+    }
+    a.card:hover .card-arrow { opacity: 1; transform: translateX(3px); }
+
+    .card.soon {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 26px 24px; opacity: .45; cursor: default;
+    }
+
+    .card-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; flex-shrink: 0;
+    }
+    .card-icon svg { display: block; }
+    .card-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .card-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    .card-arrow {
+      position: absolute; top: 24px; right: 20px; opacity: 0;
+      transition: opacity .15s, transform .15s; color: var(--accent);
+    }
+
+    .card-tag {
+      display: inline-block; margin-top: 12px; font-size: 10px; font-weight: 700;
+      letter-spacing: .7px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    }
+    .tag-live { background: rgba(34,197,94,.15); color: #4ade80; border: 1px solid rgba(34,197,94,.3); }
+    .tag-soon { background: rgba(100,116,139,.15); color: #94a3b8; border: 1px solid rgba(100,116,139,.3); }
+
+    footer {
+      text-align: center; padding: 24px; font-size: 12px;
+      color: var(--muted); border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
 </head>
 <body>
 
-<svg class="bg-art" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <defs>
-    <g id="server">
-      <rect width="150" height="14" rx="2" fill="#dbe6f7" stroke="#c2d4ee" stroke-width="0.8"/>
-      <circle cx="10" cy="7" r="2" fill="#1fae6b"/>
-      <circle cx="18" cy="7" r="2" fill="#277ffb"/>
-      <rect x="120" y="4" width="22" height="6" rx="1" fill="#c9d8ef"/>
-    </g>
-  </defs>
-  <g opacity="0.85">
-    <use href="#server" x="120" y="180"/><use href="#server" x="120" y="200"/><use href="#server" x="120" y="220"/><use href="#server" x="120" y="240"/><use href="#server" x="120" y="260"/><use href="#server" x="120" y="280"/><use href="#server" x="120" y="300"/><use href="#server" x="120" y="320"/>
-    <use href="#server" x="300" y="220"/><use href="#server" x="300" y="240"/><use href="#server" x="300" y="260"/><use href="#server" x="300" y="280"/><use href="#server" x="300" y="300"/><use href="#server" x="300" y="320"/><use href="#server" x="300" y="340"/>
-    <use href="#server" x="1010" y="200"/><use href="#server" x="1010" y="220"/><use href="#server" x="1010" y="240"/><use href="#server" x="1010" y="260"/><use href="#server" x="1010" y="280"/><use href="#server" x="1010" y="300"/>
-    <use href="#server" x="1190" y="240"/><use href="#server" x="1190" y="260"/><use href="#server" x="1190" y="280"/><use href="#server" x="1190" y="300"/><use href="#server" x="1190" y="320"/><use href="#server" x="1190" y="340"/><use href="#server" x="1190" y="360"/>
-  </g>
-  <g stroke="#277ffb" stroke-width="1" opacity="0.18" fill="none">
-    <path d="M195 250 H260 V300 H300"/>
-    <path d="M1085 280 H1150 V300 H1190"/>
-    <path d="M270 600 H720 V520 H1170"/>
-  </g>
-  <g fill="#277ffb" opacity="0.35">
-    <circle cx="720" cy="520" r="3"/><circle cx="260" cy="300" r="2.5"/><circle cx="1150" cy="300" r="2.5"/>
-  </g>
-</svg>
-
-<div class="wrap">
   <header>
-    <div class="logos">
-      <div class="logo-chip icetel"><img src="icetel.png" alt="ICETEL" /></div>
-      <div class="logo-chip nextstream"><img src="nextstream.svg" alt="Nextstream" /></div>
+    <div class="logo-icetel">
+      <img src="./icetel.png" alt="Icetel" style="height:38px; width:auto;" />
     </div>
-    <span class="badge"><span class="dot"></span>Continuidad operacional · Datacenter</span>
-    <h1>Portal de gestión DCSM</h1>
-    <p class="subtitle">Acceso centralizado a las herramientas de gestión y operación del datacenter. Selecciona una aplicación para comenzar.</p>
+    <div class="header-divider"></div>
+    <div class="logo-nextstream">
+      <img src="./nextstream.svg" alt="Nextstream" />
+    </div>
+    <div class="header-title">
+      <h1>Centro de Operaciones</h1>
+      <p>DCSM · Plataformas internas</p>
+    </div>
   </header>
 
-  <main class="grid">
+  <section class="hero">
+    <div class="hero-badge">Sistemas operativos</div>
+    <h2>Panel de acceso DCSM</h2>
+    <p>Accede a las plataformas de gestión de operaciones, recursos y servicios técnicos de Icetel.</p>
+  </section>
 
-    <a class="card" href="https://aerialmeister.github.io/turnos-dcsm/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3M8 17h3"/></svg></div>
-      <h2>Calendario de turnos</h2>
-      <p>Planificación y consulta de los turnos del personal de operación.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
+  <main>
+    <div class="section-label">Plataformas activas</div>
+    <div class="cards-grid">
 
-    <a class="card" href="https://aerialmeister.github.io/horas-extra-dcsm/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
-      <h2>Gestión de horas extra</h2>
-      <p>Registro, control y aprobación de horas extraordinarias del equipo.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
+      <a class="card" href="https://aerialmeister.github.io/itsm-icetel/">
+        <div class="card-icon" style="background: rgba(37,99,235,.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+            <path d="M9 12h6M9 16h4"/>
+          </svg>
+        </div>
+        <div class="card-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+        <div class="card-name">ITSM — Gestión de tickets</div>
+        <div class="card-desc">Registro y seguimiento de incidentes, eventos, cambios y problemas operacionales.</div>
+        <span class="card-tag tag-live">En línea</span>
+      </a>
 
-    <a class="card" href="https://aerialmeister.github.io/dashboard-tableros/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></div>
-      <h2>Medición energética mensual</h2>
-      <p>Dashboard de consumo mensual por sala.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
+      <a class="card" href="https://aerialmeister.github.io/horas-extra-dcsm/">
+        <div class="card-icon" style="background: rgba(16,185,129,.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="card-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+        <div class="card-name">Horas extra</div>
+        <div class="card-desc">Registro y aprobación de horas adicionales del personal técnico de operaciones.</div>
+        <span class="card-tag tag-live">En línea</span>
+      </a>
 
-    <a class="card" href="https://aerialmeister.github.io/dcsm-reports/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-      <h2>Gestión multipropósito</h2>
-      <p>Registro diario de actividades por equipo multipropósito.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
+      <a class="card" href="https://aerialmeister.github.io/cmdb-icetel/">
+        <div class="card-icon" style="background: rgba(139,92,246,.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+            <path d="M7 8h10M7 12h6"/>
+          </svg>
+        </div>
+        <div class="card-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+        <div class="card-name">CMDB — Inventario</div>
+        <div class="card-desc">Base de datos de activos, infraestructura y configuración de los centros de datos.</div>
+        <span class="card-tag tag-live">En línea</span>
+      </a>
 
-    <a class="card" href="https://aerialmeister.github.io/generadores-dcsm/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/><path d="M9.5 13.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></div>
-      <h2>Consumo de generadores DCSM</h2>
-      <p>Simulador de consumo de combustible por carga para cada grupo electrógeno.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
-
-    <a class="card" href="https://felipeoctaviotp.github.io/dashboard-mantenimiento-2026/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8.5 15l2 2 4-4"/></svg></div>
-      <h2>Plan de Mantenimiento anual</h2>
-      <p>Avance y actividades proyectadas.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
-
-    <a class="card" href="https://aerialmeister.github.io/cmdb-icetel/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div>
-      <h2>CMDB</h2>
-      <p>Base de conocimiento de activos de la instalación.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
-
-    <div class="card soon" aria-disabled="true">
-      <span class="soon-tag">Próximamente</span>
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 0-18 0"/><path d="M12 12l5-3"/><path d="M3 12h2M19 12h2M12 5V3"/></svg></div>
-      <h2>Indicadores mensuales y status de equipamiento</h2>
-      <p>PUE, CUR, Estado de equipamiento energía.</p>
-      <span class="go">En desarrollo</span>
     </div>
 
-    <div class="card soon" aria-disabled="true">
-      <span class="soon-tag">Próximamente</span>
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v5M12 17.5h.01"/></svg></div>
-      <h2>Gestión de Riesgos y hallazgos</h2>
-      <p>Seguimiento de hallazgos y estado de gestión.</p>
-      <span class="go">En desarrollo</span>
+    <div class="section-label">Próximamente</div>
+    <div class="cards-grid">
+
+      <div class="card soon">
+        <div class="card-icon" style="background: rgba(100,116,139,.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="card-name">Control de accesos</div>
+        <div class="card-desc">Gestión de permisos, visitas y acceso a instalaciones técnicas.</div>
+        <span class="card-tag tag-soon">Próximamente</span>
+      </div>
+
+      <div class="card soon">
+        <div class="card-icon" style="background: rgba(100,116,139,.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 20V10M12 20V4M6 20v-6"/>
+          </svg>
+        </div>
+        <div class="card-name">Informes y métricas</div>
+        <div class="card-desc">Panel consolidado de KPIs operacionales, SLAs y reportes gerenciales.</div>
+        <span class="card-tag tag-soon">Próximamente</span>
+      </div>
+
     </div>
-
-    <a class="card" href="https://aerialmeister.github.io/itsm-icetel/" target="_blank" rel="noopener">
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z"/><path d="M14 6v12"/></svg></div>
-      <h2>ITSM</h2>
-      <p>Registro de tickets para gestión de eventos e incidentes.</p>
-      <span class="go">Abrir <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </a>
-
-    <div class="card soon" aria-disabled="true">
-      <span class="soon-tag">Próximamente</span>
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M6 17h13M9 7h6"/></svg></div>
-      <h2>Biblioteca</h2>
-      <p>Directorio de ubicación de archivos documentales.</p>
-      <span class="go">En desarrollo</span>
-    </div>
-
   </main>
 
   <footer>
-    Portal de gestión <span>DCSM</span> · Continuidad operacional Datacenter San Martín
+    &copy; 2025 Icetel · <a href="https://nextstream.cl" target="_blank" rel="noopener">Nextstream</a>
   </footer>
-</div>
 
 </body>
 </html>
